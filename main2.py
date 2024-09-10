@@ -1,9 +1,8 @@
 import numpy as np
-import argparse
 import cv2
-import csv
+import streamlit as st
+import pandas as pd
 import os
-from collections import defaultdict
 
 LABELS_FILE = "weights/coco.names"
 CONFIG_FILE = "weights/yolov3.cfg"
@@ -12,8 +11,6 @@ CONFIDENCE_THRESHOLD = 0.3
 CSV_FILE = "csv/report.csv"
 
 LABELS = open(LABELS_FILE).read().strip().split("\n")
-# LABELS = ["chair", "tvmonitor"]
-print(LABELS)
 
 np.random.seed(4)
 COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
@@ -24,7 +21,7 @@ def drawBoxes(image, layerOutputs, H, W):
     boxes = []
     confidences = []
     classIDs = []
-    detected_objects = defaultdict(int)  # Dictionary to store object names and their counts
+    detected_objects = defaultdict(int)
 
     for output in layerOutputs:
         for detection in output:
@@ -45,7 +42,6 @@ def drawBoxes(image, layerOutputs, H, W):
 
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, CONFIDENCE_THRESHOLD, CONFIDENCE_THRESHOLD)
 
-    # Ensure at least one detection exists
     if len(idxs) > 0:
         for i in idxs.flatten():
             (x, y) = (boxes[i][0], boxes[i][1])
@@ -57,10 +53,6 @@ def drawBoxes(image, layerOutputs, H, W):
             text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
             cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-            # Print the detected object and confidence in the console
-            print(f"{LABELS[classIDs[i]]}")
-
-            # Increment the count of the detected object in the dictionary
             detected_objects[LABELS[classIDs[i]]] += 1
 
     # Write detected objects and their counts to the CSV file
@@ -69,8 +61,7 @@ def drawBoxes(image, layerOutputs, H, W):
         for object_name, count in detected_objects.items():
             writer.writerow([object_name, count])
 
-    # Display the image
-    cv2.imshow("output", image)
+    return image
 
 def detectObjects(imagePath):
     image = cv2.imread(imagePath)
@@ -82,14 +73,28 @@ def detectObjects(imagePath):
     blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
     layerOutputs = net.forward(ln)
-    drawBoxes(image, layerOutputs, H, W)
+    output_image = drawBoxes(image, layerOutputs, H, W)
+    
+    return output_image
+
+def main():
+    st.title("YOLOv3 Object Detection")
+    
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_file is not None:
+        image_path = os.path.join("temp", uploaded_file.name)
+        with open(image_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        output_image = detectObjects(image_path)
+        
+        st.image(output_image, caption="Processed Image", use_column_width=True)
+        
+        if os.path.exists(CSV_FILE):
+            df = pd.read_csv(CSV_FILE, header=None, names=["Object Name", "Detected Count"])
+            st.write("Detection Report")
+            st.dataframe(df)
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", required=True, help="Path to input file")
-
-    args = vars(ap.parse_args())
-    detectObjects(args["image"])
-
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    main()
