@@ -13,7 +13,7 @@ CSV_FILE = "csv/report.csv"
 KNOWLEDGE_BASE_FILE = "KnowledgeBase/101.txt"
 
 LABELS = open(LABELS_FILE).read().strip().split("\n")
-print(LABELS)
+
 
 np.random.seed(4)
 COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
