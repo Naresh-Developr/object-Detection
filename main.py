@@ -1,20 +1,16 @@
 import numpy as np
-import argparse
 import cv2
-import csv
-import os
+import pandas as pd
+import streamlit as st
 from collections import defaultdict
 
 LABELS_FILE = "weights/coco.names"
 CONFIG_FILE = "weights/yolov3.cfg"
 WEIGHTS_FILE = "weights/yolov3.weights"
 CONFIDENCE_THRESHOLD = 0.3
-CSV_FILE = "csv/report.csv"
 KNOWLEDGE_BASE_FILE = "KnowledgeBase/101.txt"
 
 LABELS = open(LABELS_FILE).read().strip().split("\n")
-
-
 np.random.seed(4)
 COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
@@ -66,18 +62,15 @@ def drawBoxes(image, layerOutputs, H, W, knowledge_base):
 
             detected_objects[LABELS[classIDs[i]]] += 1
 
-    # Write detected objects, knowledge base data, and counts to the CSV file
-    with open(CSV_FILE, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Object Name", "TotalItems", "DetectedCount"])
-        for object_name, text_count in knowledge_base.items():
-            detected_count = detected_objects.get(object_name, 0)
-            writer.writerow([object_name, text_count, detected_count])
+    # Return detected objects and knowledge base data for comparison
+    result_data = []
+    for object_name, text_count in knowledge_base.items():
+        detected_count = detected_objects.get(object_name, 0)
+        result_data.append([object_name, text_count, detected_count])
 
-    cv2.imshow("output", image)
+    return result_data, image
 
-def detectObjects(imagePath):
-    image = cv2.imread(imagePath)
+def detectObjects(image):
     (H, W) = image.shape[:2]
 
     ln = net.getLayerNames()
@@ -87,17 +80,29 @@ def detectObjects(imagePath):
     net.setInput(blob)
     layerOutputs = net.forward(ln)
 
-    # Load the knowledge base file
     knowledge_base = loadKnowledgeBase(KNOWLEDGE_BASE_FILE)
 
-    drawBoxes(image, layerOutputs, H, W, knowledge_base)
+    result_data, image_with_boxes = drawBoxes(image, layerOutputs, H, W, knowledge_base)
+    
+    return result_data, image_with_boxes
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", required=True, help="Path to input file")
+# Streamlit app
+st.title("Object Detection with Knowledge Base Comparison")
 
-    args = vars(ap.parse_args())
-    detectObjects(args["image"])
+# Image input
+uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+if uploaded_image is not None:
+    # Convert uploaded image to OpenCV format
+    file_bytes = np.asarray(bytearray(uploaded_image.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+
+    # Perform object detection
+    result_data, image_with_boxes = detectObjects(image)
+
+    # Display the image with bounding boxes
+    st.image(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB), caption='Processed Image', use_column_width=True)
+
+    # Display the comparison between knowledge base and detected objects
+    df = pd.DataFrame(result_data, columns=['Object Name', 'TotalItems (Knowledge Base)', 'DetectedCount'])
+    st.write(df)
