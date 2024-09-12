@@ -1,7 +1,5 @@
 chair, 10
 tvmonitor, 18
 keyboard, 18
-cup, 4
 cell phone, 5
-printer, 3
 mouse, 10
