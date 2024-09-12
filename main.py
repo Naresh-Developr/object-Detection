@@ -9,6 +9,7 @@ CONFIG_FILE = "weights/yolov3.cfg"
 WEIGHTS_FILE = "weights/yolov3.weights"
 CONFIDENCE_THRESHOLD = 0.3
 KNOWLEDGE_BASE_FILE = "KnowledgeBase/101.txt"
+CSV_REPORT_FILE = "csv/report.csv"
 
 LABELS = open(LABELS_FILE).read().strip().split("\n")
 np.random.seed(4)
@@ -24,11 +25,10 @@ def loadKnowledgeBase(filePath):
             knowledge_base[item.strip()] = int(count.strip())
     return knowledge_base
 
-def drawBoxes(image, layerOutputs, H, W, knowledge_base):
+def drawBoxes(image, layerOutputs, H, W, detected_objects):
     boxes = []
     confidences = []
     classIDs = []
-    detected_objects = defaultdict(int)
 
     for output in layerOutputs:
         for detection in output:
@@ -62,15 +62,9 @@ def drawBoxes(image, layerOutputs, H, W, knowledge_base):
 
             detected_objects[LABELS[classIDs[i]]] += 1
 
-    # Return detected objects and knowledge base data for comparison
-    result_data = []
-    for object_name, text_count in knowledge_base.items():
-        detected_count = detected_objects.get(object_name, 0)
-        result_data.append([object_name, text_count, detected_count])
+    return image
 
-    return result_data, image
-
-def detectObjects(image):
+def detectObjects(image, detected_objects):
     (H, W) = image.shape[:2]
 
     ln = net.getLayerNames()
@@ -80,29 +74,43 @@ def detectObjects(image):
     net.setInput(blob)
     layerOutputs = net.forward(ln)
 
-    knowledge_base = loadKnowledgeBase(KNOWLEDGE_BASE_FILE)
+    return drawBoxes(image, layerOutputs, H, W, detected_objects)
 
-    result_data, image_with_boxes = drawBoxes(image, layerOutputs, H, W, knowledge_base)
-    
-    return result_data, image_with_boxes
+def updateCsvReport(detected_objects, knowledge_base):
+    result_data = []
+    for object_name, text_count in knowledge_base.items():
+        detected_count = detected_objects.get(object_name, 0)
+        result_data.append([object_name, text_count, detected_count])
+
+    # Convert to DataFrame and save to CSV
+    df = pd.DataFrame(result_data, columns=['Object Name', 'TotalItems (Knowledge Base)', 'DetectedCount'])
+    df.to_csv(CSV_REPORT_FILE, index=False)
+    return df
 
 # Streamlit app
-st.title("Object Detection with Knowledge Base Comparison")
+st.title("Multi-Image Object Detection with Knowledge Base Comparison")
 
-# Image input
-uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# Multiple image input
+uploaded_images = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
-if uploaded_image is not None:
-    # Convert uploaded image to OpenCV format
-    file_bytes = np.asarray(bytearray(uploaded_image.read()), dtype=np.uint8)
-    image = cv2.imdecode(file_bytes, 1)
+if uploaded_images:
+    detected_objects = defaultdict(int)
+    knowledge_base = loadKnowledgeBase(KNOWLEDGE_BASE_FILE)
 
-    # Perform object detection
-    result_data, image_with_boxes = detectObjects(image)
+    for uploaded_image in uploaded_images:
+        # Convert uploaded image to OpenCV format
+        file_bytes = np.asarray(bytearray(uploaded_image.read()), dtype=np.uint8)
+        image = cv2.imdecode(file_bytes, 1)
 
-    # Display the image with bounding boxes
-    st.image(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB), caption='Processed Image', use_column_width=True)
+        # Perform object detection for each image
+        image_with_boxes = detectObjects(image, detected_objects)
+
+        # Display the processed image with bounding boxes
+        st.image(cv2.cvtColor(image_with_boxes, cv2.COLOR_BGR2RGB), caption=f'Processed Image: {uploaded_image.name}', use_column_width=True)
+
+    # Update CSV report with aggregated detected object counts
+    df = updateCsvReport(detected_objects, knowledge_base)
 
     # Display the comparison between knowledge base and detected objects
-    df = pd.DataFrame(result_data, columns=['Object Name', 'TotalItems (Knowledge Base)', 'DetectedCount'])
     st.write(df)
+    st.success(f"Report successfully updated and saved to {CSV_REPORT_FILE}")

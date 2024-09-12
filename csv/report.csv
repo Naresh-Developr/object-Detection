@@ -1,40 +1,8 @@
-<<<<<<< HEAD
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-chair,1
-tvmonitor,6
-keyboard,4
-cup,1
-cell phone,1
-=======
-Object Name,TotalItems,DetectedCount
-chair,5,1
-tvmonitor,6,6
-keyboard,6,4
-cup,2,1
-cell phone,1,1
+Object Name,TotalItems (Knowledge Base),DetectedCount
+chair,10,2
+tvmonitor,18,15
+keyboard,18,10
+cup,4,1
+cell phone,5,1
 printer,3,0
->>>>>>> b283d48aa7c9f88196511f4e1e603abf1dd4bc5c
+mouse,10,7
