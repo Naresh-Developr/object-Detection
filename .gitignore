@@ -3,7 +3,12 @@
 /weights
 .venv
 weights
+<<<<<<< HEAD
 detect_objects.py
 draw_boxes.py
 load_kb.py
 app.py
+=======
+app.py
+__pycache__
+>>>>>>> origin/sukanth
