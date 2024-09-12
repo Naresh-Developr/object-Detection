@@ -2,6 +2,14 @@
 
 ---
 
+## Weights
+
+```bash
+Weights Link: https://www.kaggle.com/datasets/ravi02516/trained-weights-and-cfg
+```
+
+---
+
 ## Install
 
 ```bash
