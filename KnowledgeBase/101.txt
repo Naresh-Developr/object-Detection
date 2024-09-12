@@ -1,5 +1,5 @@
-chair, 10
-tvmonitor, 18
-keyboard, 18
+chair, 2
+tvmonitor, 16 
+keyboard, 10
 cell phone, 5
-mouse, 10
+mouse, 8
