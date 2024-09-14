@@ -1,0 +1,6 @@
+chair, 5
+tvmonitor, 6
+keyboard, 6
+cup, 2
+cell phone, 1
+printer, 3

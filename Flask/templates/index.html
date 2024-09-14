@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection with Knowledge Base Comparison</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Object Detection with Knowledge Base Comparison</h1>
+
+        <!-- Upload Form -->
+        <form method="POST" enctype="multipart/form-data">
+            <label for="images">Choose Images:</label>
+            <input type="file" name="images" multiple>
+            <input type="submit" value="Upload">
+        </form>
+
+        <!-- Show processed image -->
+        {% if processed_image %}
+        <h2>Processed Image</h2>
+        <img src="{{ url_for('static', filename=processed_image) }}">
+        {% endif %}
+
+        <!-- Show result table -->
+        {% if result_table %}
+        <h2>Detection Results</h2>
+        <div>{{ result_table | safe }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>
