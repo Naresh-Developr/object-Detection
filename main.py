@@ -4,7 +4,6 @@ import cv2
 import pandas as pd
 import streamlit as st
 from src.detect_objects import detectObjects
-from src.load_kb import loadKnowledgeBase
 from src.to_report import append_to_csv
 
 LABELS_FILE = "weights/coco.names"
@@ -16,7 +15,6 @@ LABELS = open(LABELS_FILE).read().strip().split("\n")
 np.random.seed(4)
 COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 net = cv2.dnn.readNetFromDarknet(CONFIG_FILE, WEIGHTS_FILE)
-
 
 
 def main():
