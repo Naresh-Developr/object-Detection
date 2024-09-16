@@ -1,5 +1,4 @@
 chair, 2
 tvmonitor, 16 
 keyboard, 10
-cell phone, 5
 mouse, 8
