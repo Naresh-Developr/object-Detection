@@ -1,4 +1,4 @@
-/env
+/Flask/env
 /weights
 .venv
 weights
