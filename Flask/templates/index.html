@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection with Knowledge Base</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Object Detection with Knowledge Base</h1>
+
+        <!-- Form to handle image upload and process submission -->
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            <label for="upload-input" class="upload-btn">Upload Images</label>
+            <input type="file" name="images" id="upload-input" accept="image/*" multiple required>
+
+            <!-- Start Button -->
+            <button type="submit" class="btn">Start Processing</button>
+        </form>
+
+        <!-- Display processed images -->
+        {% if all_processed_images %}
+            <h2>Processed Images</h2>
+            {% for image in all_processed_images %}
+                <img src="{{ url_for('static', filename=image) }}" alt="Processed Image" class="processed-image">
+            {% endfor %}
+        {% endif %}
+
+        <!-- Display final combined table -->
+        {% if result_table %}
+            <h2>Final Detection Results</h2>
+            <div class="table-container">
+                {{ result_table | safe }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

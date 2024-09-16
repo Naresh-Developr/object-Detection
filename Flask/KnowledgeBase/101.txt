@@ -1,0 +1,4 @@
+chair, 2
+tvmonitor, 16 
+keyboard, 10
+mouse, 8

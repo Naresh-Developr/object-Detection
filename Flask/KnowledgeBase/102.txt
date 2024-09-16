@@ -1,0 +1,5 @@
+chair, 5
+tvmonitor, 6
+keyboard, 6
+mouse, 5
+printer, 3

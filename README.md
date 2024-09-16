@@ -1,4 +1,17 @@
 # Simple object detection using python, opencv and YOLO
+---
+## weights
+
+```bash
+Link: https://www.kaggle.com/datasets/ravi02516/trained-weights-and-cfg
+```
+---
+
+## Weights
+
+```bash
+Weights Link: https://www.kaggle.com/datasets/ravi02516/trained-weights-and-cfg
+```
 
 ---
 
